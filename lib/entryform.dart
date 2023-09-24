@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'Item.dart';
@@ -113,9 +112,11 @@ class EntryFormState extends State<EntryForm> {
                   children: <Widget>[
                     // tombol simpan
                     Expanded(
-                      child: RaisedButton(
-                        color: Theme.of(context).primaryColorDark,
-                        textColor: Theme.of(context).primaryColorLight,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColorDark,
+                            textStyle: TextStyle(
+                                color: Theme.of(context).primaryColorLight)),
                         child: Text(
                           'Save',
                           textScaleFactor: 1.5,
@@ -146,9 +147,11 @@ class EntryFormState extends State<EntryForm> {
                     ),
                     // tombol batal
                     Expanded(
-                      child: RaisedButton(
-                        color: Theme.of(context).primaryColorDark,
-                        textColor: Theme.of(context).primaryColorLight,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColorDark,
+                            textStyle: TextStyle(
+                                color: Theme.of(context).primaryColorLight)),
                         child: Text(
                           'Cancel',
                           textScaleFactor: 1.5,

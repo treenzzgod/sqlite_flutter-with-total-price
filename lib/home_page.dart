@@ -37,7 +37,7 @@ class HomeState extends State<Home> {
           alignment: Alignment.bottomCenter,
           child: SizedBox(
             width: double.infinity,
-            child: RaisedButton(
+            child: ElevatedButton(
               child: Text("Tambah Item"),
               onPressed: () async {
                 var item = await navigateToEntryForm(context, null);
