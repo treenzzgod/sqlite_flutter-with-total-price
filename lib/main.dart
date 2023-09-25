@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sqlite_flutter/home.dart';
 
 import 'home_page.dart';
 
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
  theme: ThemeData(
  primarySwatch: Colors.blueGrey,
  ),
- home: Home(),
+ home: Homepage(),
  );
  }
 }

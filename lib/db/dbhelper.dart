@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-
-import '../Item.dart';
+import 'package:sqlite_flutter/item.dart';
 
 class DbHelper {
   static DbHelper? _dbHelper;
@@ -15,7 +14,7 @@ class DbHelper {
     Directory directory = await getApplicationDocumentsDirectory();
     String path = directory.path + 'item.db';
     //create, read databases
-    var itemDatabase = openDatabase(path, version: 4, onCreate: _createDb);
+    var itemDatabase = openDatabase(path, version: 5, onCreate: _createDb);
     //mengembalikan nilai object sebagai hasil dari fungsinya
     return itemDatabase;
   }
@@ -25,10 +24,9 @@ class DbHelper {
     await db.execute('''
         CREATE TABLE item (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
+        date Datetime,
         price INTEGER,
-        stock INTEGER,
-        kodeBarang TEXT
+        deksripsi TEXT
         )
       ''');
   }
@@ -36,20 +34,20 @@ class DbHelper {
   //select databases
   Future<List<Map<String, dynamic>>> select() async {
     Database db = await this.initDb();
-    var mapList = await db.query('item', orderBy: 'name');
+    var mapList = await db.query('item', orderBy: 'id');
     return mapList;
   }
 
   //create databases
   Future<int> insert(Item object) async {
-    Database db = await this.initDb();
+    Database db = await initDb();
     int count = await db.insert('item', object.toMap());
     return count;
   }
 
   //update databases
   Future<int> update(Item object) async {
-    Database db = await this.initDb();
+    Database db = await initDb();
     int count = await db
         .update('item', object.toMap(), where: 'id=?', whereArgs: [object.id]);
     return count;

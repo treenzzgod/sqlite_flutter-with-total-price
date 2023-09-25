@@ -1,30 +1,29 @@
-import 'package:sqlite_flutter/db/dbhelper.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:sqlite_flutter/item.dart';
-import 'package:sqlite_flutter/entryform.dart';
-// import 'Item.dart';
-// import 'entryform.dart';
 
-class Home extends StatefulWidget {
+import 'package:sqflite/sqflite.dart';
+import 'package:sqlite_flutter/db/dbhelper.dart';
+import 'package:sqlite_flutter/item.dart';
+import 'entryform.dart';
+
+class Cash extends StatefulWidget {
   @override
-  HomeState createState() => HomeState();
+  CashState createState() => CashState();
 }
 
-class HomeState extends State<Home> {
+class CashState extends State<Cash> {
   DbHelper dbHelper = DbHelper();
   int count = 0;
   List<Item>? itemList;
-
   @override
   Widget build(BuildContext context) {
     updateListView();
+
     if (itemList == null) {
       itemList = <Item>[];
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text('Daftar Item'),
+        title: Text('Data Cashflow'),
       ),
       body: Column(children: [
         Text(
@@ -56,15 +55,30 @@ class HomeState extends State<Home> {
   }
 
   Future<Item?> navigateToEntryForm(BuildContext context, Item? item) async {
-    var result = await Navigator.push(context,
-        MaterialPageRoute(builder: (BuildContext context) {
-      return EntryForm(item);
-    }));
+    var result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (BuildContext context) {
+        return EntryForm(item);
+      }),
+    );
     return result;
   }
 
+  void updateListView() {
+    final Future<Database> dbFuture = dbHelper.initDb();
+    dbFuture.then((database) {
+      //TODO 1 Select data dari DB
+      Future<List<Item>> itemListFuture = dbHelper.getItemList();
+      itemListFuture.then((itemList) {
+        setState(() {
+          this.itemList = itemList;
+          this.count = itemList.length;
+        });
+      });
+    });
+  }
+
   ListView createListView() {
-    TextStyle? textStyle = Theme.of(context).textTheme.headline5;
     return ListView.builder(
       itemCount: count,
       itemBuilder: (BuildContext context, int index) {
@@ -79,7 +93,6 @@ class HomeState extends State<Home> {
             ),
             title: Text(
               this.itemList![index].date.toString(),
-              style: textStyle,
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,8 +101,7 @@ class HomeState extends State<Home> {
                 SizedBox(
                   height: 5.0,
                 ),
-                Text(
-                    "Dekripsi : " + this.itemList![index].deksripsi.toString()),
+                Text("Stock : " + this.itemList![index].deksripsi.toString()),
               ],
             ),
             trailing: GestureDetector(
@@ -111,20 +123,5 @@ class HomeState extends State<Home> {
         );
       },
     );
-  }
-
-  //update List item
-  void updateListView() {
-    final Future<Database> dbFuture = dbHelper.initDb();
-    dbFuture.then((database) {
-      //TODO 1 Select data dari DB
-      Future<List<Item>> itemListFuture = dbHelper.getItemList();
-      itemListFuture.then((itemList) {
-        setState(() {
-          this.itemList = itemList;
-          this.count = itemList.length;
-        });
-      });
-    });
   }
 }

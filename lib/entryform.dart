@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:sqlite_flutter/cashflow.dart';
 
-import 'Item.dart';
+import 'item.dart';
 
 class EntryForm extends StatefulWidget {
   final Item? item;
@@ -14,18 +16,17 @@ class EntryFormState extends State<EntryForm> {
   Item? item;
   EntryFormState(this.item);
   TextEditingController nameController = TextEditingController();
+  TextEditingController dateController = TextEditingController();
   TextEditingController priceController = TextEditingController();
-  TextEditingController stockController = TextEditingController();
-  TextEditingController kodeBarangController = TextEditingController();
+  TextEditingController deksripsiController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     //kondisi
     if (item != null) {
-      nameController.text = item!.name;
+      dateController.text = item!.date.toString();
       priceController.text = item!.price.toString();
-      stockController.text = item!.stock.toString();
-      kodeBarangController.text = item!.kodeBarang;
+      deksripsiController.text = item!.deksripsi;
     }
     //rubah
     return Scaffold(
@@ -37,20 +38,31 @@ class EntryFormState extends State<EntryForm> {
           padding: EdgeInsets.only(top: 15.0, left: 10.0, right: 10.0),
           child: ListView(
             children: <Widget>[
-              // nama
-              Padding(
-                padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+              // date
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(),
                 child: TextField(
-                  controller: nameController,
-                  keyboardType: TextInputType.text,
+                  controller: dateController,
                   decoration: InputDecoration(
-                    labelText: 'Nama Barang',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
+                    labelText: "Tanggal",
+                    icon: Icon(
+                      Icons.calendar_today_rounded,
                     ),
                   ),
-                  onChanged: (value) {
-                    //
+                  onTap: () async {
+                    DateTime? pickeddate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (pickeddate != null) {
+                      setState(() {
+                        dateController.text =
+                            DateFormat('yyyy-MM-dd').format(pickeddate);
+                      });
+                    }
                   },
                 ),
               ),
@@ -72,30 +84,14 @@ class EntryFormState extends State<EntryForm> {
                 ),
               ),
               // stock
-              Padding(
-                padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
-                child: TextField(
-                  controller: stockController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Stock',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    //
-                  },
-                ),
-              ),
               // kode barang
               Padding(
                 padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
                 child: TextField(
-                  controller: kodeBarangController,
-                  keyboardType: TextInputType.number,
+                  controller: deksripsiController,
+                  keyboardType: TextInputType.text,
                   decoration: InputDecoration(
-                    labelText: 'Kode Barang',
+                    labelText: 'Deksripsi',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
@@ -125,20 +121,24 @@ class EntryFormState extends State<EntryForm> {
                           if (item == null) {
                             // tambah data
                             item = Item(
-                              nameController.text,
+                              dateController.text,
                               int.parse(priceController.text),
-                              int.parse(stockController.text),
-                              kodeBarangController.text,
+                              deksripsiController.text,
                             );
                           } else {
                             // ubah data
-                            item?.name = nameController.text;
+                            item?.date = dateController.text;
                             item?.price = int.parse(priceController.text);
-                            item?.stock = int.parse(stockController.text);
-                            item?.kodeBarang = kodeBarangController.text;
+                            item?.deksripsi = deksripsiController.text;
                           }
                           // kembali ke layar sebelumnya dengan membawa objek item
                           Navigator.pop(context, item);
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => Cash(),
+                          //   ),
+                          // );
                         },
                       ),
                     ),
