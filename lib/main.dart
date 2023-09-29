@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:sqlite_flutter/home.dart';
-
-import 'home_page.dart';
+import 'package:provider/provider.dart';
+import 'package:sqlite_flutter/pages/pages.dart';
 
 //package letak folder Anda
-void main() => runApp(MyApp());
+
+void main() {
+  runApp(MyApp());
+}
+
 class MyApp extends StatelessWidget {
- @override
- Widget build(BuildContext context) {
- return MaterialApp(
- debugShowCheckedModeBanner: false,
- title: 'Tambahkan Item',
- theme: ThemeData(
- primarySwatch: Colors.blueGrey,
- ),
- home: Homepage(),
- );
- }
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "FinPlan App",
+      initialRoute: '/',
+      routes: {
+        '/': (context) => Login(),
+        '/home': (context) => Home(),
+        '/entrymasuk': (context) => EntryMasuk(),
+        '/entryluar': (context) => EntryLuar(),
+        '/cashflow': (context) => Cash(),
+        '/setting': (context) => Setting(),
+      },
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
+    );
+  }
 }
