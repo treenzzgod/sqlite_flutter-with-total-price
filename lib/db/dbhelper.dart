@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqlite_flutter/item.dart';
+import 'package:sqlite_flutter/models/pemasukan.dart';
+import 'package:sqlite_flutter/models/user.dart';
+import 'package:sqlite_flutter/type/pp_type.dart';
 
 class DbHelper {
   static DbHelper? _dbHelper;
@@ -12,62 +14,162 @@ class DbHelper {
   Future<Database> initDb() async {
     //untuk menentukan nama database dan lokasi yg dibuat
     Directory directory = await getApplicationDocumentsDirectory();
-    String path = directory.path + 'item.db';
+    String path = directory.path + 'finance.db';
     //create, read databases
-    var itemDatabase = openDatabase(path, version: 5, onCreate: _createDb);
+    var itemDatabase = openDatabase(path, version: 6, onCreate: _createDb);
     //mengembalikan nilai object sebagai hasil dari fungsinya
     return itemDatabase;
   }
 
+  // Future<Database> get database async {
+  //   if (_database == null) {
+  //     _database = await initDb();
+  //   }
+  //   return _database!;
+  // }
   //buat tabel baru dengan nama item
   void _createDb(Database db, int version) async {
     await db.execute('''
-        CREATE TABLE item (
+        Create Table user(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT,
+          password TEXT
+          )
+          ''');
+    await db.execute('''
+        CREATE TABLE pemasukan (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date Datetime,
-        price INTEGER,
-        deksripsi TEXT
+        date String,
+        amount INTEGER,
+        deksripsi TEXT,
+        tipe TEXT
         )
       ''');
+    await db.insert("user", {"username": "user", "password": "user"});
   }
 
-  //select databases
-  Future<List<Map<String, dynamic>>> select() async {
-    Database db = await this.initDb();
-    var mapList = await db.query('item', orderBy: 'id');
-    return mapList;
-  }
-
-  //create databases
-  Future<int> insert(Item object) async {
+  //create database
+  Future<int> insertuser(User object) async {
     Database db = await initDb();
-    int count = await db.insert('item', object.toMap());
+    int count = await db.insert('user', object.toMap());
     return count;
   }
 
-  //update databases
-  Future<int> update(Item object) async {
+  //create login user
+  Future<bool> login(String username, String password) async {
     Database db = await initDb();
-    int count = await db
-        .update('item', object.toMap(), where: 'id=?', whereArgs: [object.id]);
-    return count;
-  }
-
-  //delete databases
-  Future<int> delete(int id) async {
-    Database db = await this.initDb();
-    int count = await db.delete('item', where: 'id=?', whereArgs: [id]);
-    return count;
-  }
-
-  Future<List<Item>> getItemList() async {
-    var itemMapList = await select();
-    int count = itemMapList.length;
-    List<Item> itemList = <Item>[];
-    for (int i = 0; i < count; i++) {
-      itemList.add(Item.fromMap(itemMapList[i]));
+    List<Map> maps = await db.query('user',
+        where: 'username = ? and password = ?',
+        whereArgs: [username, password]);
+    if (maps.isNotEmpty) {
+      return true;
+    } else {
+      return false;
     }
-    return itemList;
+  }
+
+  Future<int> gantipassword(String username, String password) async {
+    Database db = await initDb();
+    int result = await db.rawUpdate(
+        'Update user set password = ? where username = ?',
+        [password, username]);
+    return result;
+  }
+
+  //get userlogin
+  Future<List<User>> getUserLogin(String username) async {
+    Database db = await initDb();
+    List<Map<String, dynamic>> maps =
+        await db.query('user', where: 'username = ?', whereArgs: [username]);
+
+    List<User> user = [];
+    for (int i = 0; i < maps.length; i++) {
+      user.add(User.fromMap(maps[i]));
+    }
+    return user;
+  }
+
+  Future<User> getUserByUsername(String username) async {
+    Database db = await initDb();
+    List<Map<String, dynamic>> maps =
+        await db.query('user', where: 'username = ?', whereArgs: [username]);
+    return User.fromMap(maps[0]);
+  }
+
+  //Pemasukandatabase
+  Future<int> insertPemasukandb(Pemasukan object) async {
+    Database db = await initDb();
+    int count = await db.insert('Pemasukan', object.toMap());
+    return count;
+  }
+
+  //insert data pemasukan
+  Future<int> insertpemasukan(String date, int amount, String deksripsi) async {
+    Database db = await initDb();
+    Pemasukan pemasukan = Pemasukan(date, amount, deksripsi, tipepemasukan);
+    print(pemasukan.toMap());
+    int count = await db.insert('Pemasukan', pemasukan.toMap());
+    return count;
+  }
+
+  //insert data pengeluaran
+  Future<int> insertpengeluaran(
+      String date, int amount, String deksripsi) async {
+    Database db = await initDb();
+    Pemasukan pengeluaran = Pemasukan(date, amount, deksripsi, tipepengeluaran);
+    int count = await db.insert('Pemasukan', pengeluaran.toMap());
+    return count;
+  }
+
+  // get total pemasukan
+  Future<int> getTotalPemasukan() async {
+    Database db = await initDb();
+    List<Map<String, dynamic>> maps = await db.rawQuery(
+        'SELECT SUM(amount)as total FROM pemasukan WHERE tipe = "pemasukan"');
+    if (maps.isNotEmpty && maps[0]['total'] != null) {
+      int total = maps[0]['total'];
+      return total;
+    } else {
+      return 0;
+    }
+  }
+
+  //get total pengeluaran
+  Future<int> getTotalPengeluaran() async {
+    Database db = await initDb();
+    List<Map<String, dynamic>> maps = await db.rawQuery(
+        'SELECT SUM(amount) as total FROM pemasukan WHERE tipe = "pengeluaran"');
+
+    if (maps.isNotEmpty && maps[0]['total'] != null) {
+      int total = maps[0]['total'];
+      return total;
+    } else {
+      return 0;
+    }
+  }
+
+  //get data dari database
+  Future<List<Pemasukan>> getItemList() async {
+    Database db = await initDb();
+    List<Map<String, dynamic>> maps = await db.query('Pemasukan');
+    List<Pemasukan> pemasukan = [];
+    for (int i = 0; i < maps.length; i++) {
+      pemasukan.add(Pemasukan.fromMap(maps[i]));
+    }
+    return pemasukan;
+  }
+
+  //create data pemasukan
+  Future<int> insertDataPemasukan(Pemasukan object) async {
+    Database db = await initDb();
+    int count = await db.insert('Pemasukan', object.toMap());
+    return count;
+  }
+
+  //delete data pemasukan
+  Future<void> deleteDataPemasukan(int id) async {
+    Database db = await initDb();
+    await db.delete('Pemasukan', where: 'id = ?', whereArgs: [id]);
   }
 
   factory DbHelper() {
@@ -76,21 +178,10 @@ class DbHelper {
     }
     return _dbHelper!;
   }
-
   Future<Database> get database async {
     if (_database == null) {
       _database = await initDb();
     }
     return _database!;
-  }
-
-  Future<Object?> totalharga() async {
-    Database db = await this.initDb();
-    var result = await db.rawQuery('SELECT SUM(price) FROM item');
-    if (result.length > 0) {
-      return result[0]['SUM(price)'];
-    } else {
-      return 0;
-    }
   }
 }
