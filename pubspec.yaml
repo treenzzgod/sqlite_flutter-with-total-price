@@ -42,7 +42,6 @@ dependencies:
   syncfusion_flutter_datepicker: ^23.1.36
   intl: ^0.18.1
   calendar_date_picker2: ^0.5.3
-  provider: ^6.0.5
   fl_chart: ^0.63.0
   # flutter_localizations:
   #   sdk: flutter
